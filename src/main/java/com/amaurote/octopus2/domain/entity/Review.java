@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -44,5 +45,5 @@ public class Review {
     private Instant dateEdited;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewVote> votes;
+    private List<ReviewVote> votes = new ArrayList<>();
 }

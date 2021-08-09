@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +29,23 @@ public class ReviewService {
     }
 
     public ReviewDTO saveOrUpdate(ReviewDTO reviewDTO, Item item, User author) {
-        var review = reviewRepository.findByItemAndAuthor(item, author).orElse(new Review());
+        var review = reviewRepository.findByItemAndAuthor(item, author)
+                .orElse(Review.builder()
+                        .item(item)
+                        .author(author)
+                        .text(reviewDTO.getText())
+                        .pros(reviewDTO.getPros())
+                        .cons(reviewDTO.getCons())
+                        .build()
+                );
 
+        if(review.getDateCreated() == null) {
+            review.setDateCreated(Instant.now());
+        } else {
+            review.setDateEdited(Instant.now());
+        }
 
-
-        return null;
+        return reviewToLightDTO(reviewRepository.save(review));
     }
 
     @Transactional
