@@ -17,4 +17,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Optional<Review> findByItemAndAuthor(Item item , User author);
 
+    Optional<Review> findById(Long id);
 }

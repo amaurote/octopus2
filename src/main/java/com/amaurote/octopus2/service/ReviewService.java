@@ -3,8 +3,11 @@ package com.amaurote.octopus2.service;
 import com.amaurote.octopus2.domain.entity.*;
 import com.amaurote.octopus2.dto.PageWrapper;
 import com.amaurote.octopus2.dto.ReviewDTO;
+import com.amaurote.octopus2.exception.ReviewException;
+import com.amaurote.octopus2.repository.ItemRepository;
 import com.amaurote.octopus2.repository.ReviewRepository;
 import com.amaurote.octopus2.repository.ReviewVoteRepository;
+import com.amaurote.octopus2.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +26,21 @@ public class ReviewService {
 
     private final ReviewVoteRepository reviewVoteRepository;
 
-    public ReviewService(ReviewRepository reviewRepository, ReviewVoteRepository reviewVoteRepository) {
+    private final ItemRepository itemRepository;
+
+    private final UserRepository userRepository;
+
+    public ReviewService(ReviewRepository reviewRepository, ReviewVoteRepository reviewVoteRepository, ItemRepository itemRepository, UserRepository userRepository) {
         this.reviewRepository = reviewRepository;
         this.reviewVoteRepository = reviewVoteRepository;
+        this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
+    }
+
+    public ReviewDTO saveOrUpdate(ReviewDTO reviewDTO, String catalogId, String username) {
+        Item item = itemRepository.findOneByCatalogId(catalogId).orElseThrow(() -> new ReviewException("Item not found: " + catalogId));
+        User currentUser = userRepository.findByUserName(username).orElseThrow(() -> new ReviewException("User not found: " + catalogId));
+        return saveOrUpdate(reviewDTO, item, currentUser);
     }
 
     public ReviewDTO saveOrUpdate(ReviewDTO reviewDTO, Item item, User author) {
@@ -39,7 +54,7 @@ public class ReviewService {
                         .build()
                 );
 
-        if(review.getDateCreated() == null) {
+        if (review.getDateCreated() == null) {
             review.setDateCreated(Instant.now());
         } else {
             review.setDateEdited(Instant.now());
@@ -49,7 +64,10 @@ public class ReviewService {
     }
 
     @Transactional
-    public PageWrapper<ReviewDTO> getAllReviews(Item item, User currentUser, int page, int pageSize) {
+    public PageWrapper<ReviewDTO> getAllReviews(String catalogId, String currentUserName, int page, int pageSize) {
+        Item item = itemRepository.findOneByCatalogId(catalogId).orElseThrow(() -> new ReviewException("Item not found: " + catalogId));
+        User currentUser = userRepository.findByUserName(currentUserName).orElse(null);
+
         Pageable pageRequest = PageRequest.of(page, pageSize, Sort.Direction.ASC, "dateCreated");
 
         List<ReviewDTO> elements = new ArrayList<>();
@@ -69,6 +87,7 @@ public class ReviewService {
 
     private ReviewDTO reviewToLightDTO(Review review) {
         return ReviewDTO.builder()
+                .id(review.getId())
                 .text(review.getText())
                 .pros(review.getPros())
                 .cons(review.getCons())
@@ -78,9 +97,10 @@ public class ReviewService {
     }
 
     private ReviewDTO reviewToDTO(Review review, User author) {
-        ReviewVote userVote = reviewVoteRepository.findByAuthorAndReview(author, review);
+        ReviewVote userVote = reviewVoteRepository.findByAuthorAndReview(author, review).orElse(null);
 
         return ReviewDTO.builder()
+                .id(review.getId())
                 .text(review.getText())
                 .pros(review.getPros())
                 .cons(review.getCons())

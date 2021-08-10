@@ -33,7 +33,7 @@ public class RatingController {
 
     @PostMapping("/rate")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<?> rate(@RequestParam @NotNull @NotBlank String catalogId,
+    public ResponseEntity<?> rate(@RequestParam(name = "catid") @NotNull @NotBlank String catalogId,
                                   @RequestParam @NotNull @Min(1) @Max(5) Integer score,
                                   Principal principal) {
         RatingAggregateResults rating = null;

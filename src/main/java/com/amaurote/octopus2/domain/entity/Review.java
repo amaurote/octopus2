@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,8 @@ import java.util.List;
 public class Review {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GenericGenerator(name = "id", strategy = "com.amaurote.octopus2.domain.generator.IdLongGenerator")
+    @GeneratedValue(generator = "id")
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     private Long id;
 
@@ -46,4 +49,17 @@ public class Review {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewVote> votes = new ArrayList<>();
+
+    // redundancy for easier sorting
+    @Column
+    private Integer ups;
+
+    @Column
+    private Integer downs;
+
+    @Column
+    private Integer count;
+
+    @Column
+    private Integer score;
 }

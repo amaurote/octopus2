@@ -43,52 +43,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-
-
     private UserDTO userToDTO(User user) {
         return UserDTO.builder()
                 .username(user.getUserName())
                 .email(user.getEmail())
                 .loginByEmail(user.isLoginByEmail())
                 .build();
-    }
-
-    public void test() {
-        User admin = new User();
-        admin.setEmail("admin@test.com");
-        admin.setUserName("admin");
-        admin.setPassword(passwordEncoder.encode("pass"));
-        admin.setActive(true);
-        admin.setEnabled(true);
-        admin.setLoginByEmail(true);
-
-        User user = new User();
-        user.setEmail("user@test.com");
-        user.setUserName("user");
-        user.setPassword(passwordEncoder.encode("pass"));
-        user.setActive(true);
-        user.setEnabled(true);
-        user.setLoginByEmail(false);
-
-        User editor = new User();
-        editor.setEmail("editor@test.com");
-        editor.setUserName("editor");
-        editor.setPassword(passwordEncoder.encode("pass"));
-        editor.setActive(true);
-        editor.setEnabled(true);
-        editor.setLoginByEmail(true);
-
-        User moderator = new User();
-        moderator.setEmail("moderator@test.com");
-        moderator.setUserName("moderator");
-        moderator.setPassword(passwordEncoder.encode("pass"));
-        moderator.setActive(true);
-        moderator.setEnabled(true);
-        moderator.setLoginByEmail(true);
-
-        userRepository.save(admin);
-        userRepository.save(user);
-        userRepository.save(editor);
-        userRepository.save(moderator);
     }
 }
